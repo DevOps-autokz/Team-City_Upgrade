@@ -1,0 +1,64 @@
+version: "3.9"
+services:
+  Postgre_TeamCity:
+    image: postgres:13.2-alpine
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DB}
+    volumes:
+      - /var/postgre_teamcity:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+
+  TeamCity-Server:
+    image: jetbrains/teamcity-server:latest
+    volumes:
+      - ~/team-city/server/:/data/teamcity_server/datadir
+      - ~/team-city/server/logs:/opt/teamcity/logs
+#      - "/etc/timezone:/etc/timezone:ro"  
+      - "/etc/localtime:/etc/localtime:ro"
+    ports:
+      - "8111:8111"    
+    restart: always
+
+#
+#  TC-Agent-01:  
+#    image: jetbrains/teamcity-agent    
+#    volumes:
+#      - ~/team-city/agents/agent-01:/data/teamcity_agent/conf
+#      - /var/run/docker.sock:/var/run/docker.sock
+#    environment:
+#      SERVER_URL: http://${TC_SERVER_IP}:8111/
+#      AGENT_NAME: Agent-01
+#    restart: always  
+#    depends_on:
+#      - TC-Server
+#    #command: 'chmod 666 /var/run/docker.sock' 
+#
+#  TC-Agent-02:  
+#    image: jetbrains/teamcity-agent 
+#    volumes:
+#      - ~/team-city/agents/agent-02:/data/teamcity_agent/conf
+#      - /var/run/docker.sock:/var/run/docker.sock
+#    environment:
+#      SERVER_URL: http://${TC_SERVER_IP}:8111/
+#      AGENT_NAME: Agent-02
+#    restart: always
+#    depends_on:
+#      - TC-Server
+#    #command: 'chmod 666 /var/run/docker.sock' 
+#
+#  TC-Agent-03:
+#    image: jetbrains/teamcity-agent:latest
+#    volumes:
+#      - ~/team-city/agents/agent-03:/data/teamcity_agent/conf
+#      - /var/run/docker.sock:/var/run/docker.sock
+#    environment:
+#      SERVER_URL: http://${TC_SERVER_IP}:8111/
+#      AGENT_NAME: Agent-03
+#    restart: always
+#    depends_on:
+#      - TC-Server
+#    #command: 'sudo chmod 666 /var/run/docker.sock' 
