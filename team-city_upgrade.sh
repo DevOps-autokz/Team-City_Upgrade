@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 SCRIPT_HOME="$HOME/scripts/team-city_upgrade"
 TEAMCITY_HOME="$HOME/team-city"
 . ${SCRIPT_HOME}/.env
