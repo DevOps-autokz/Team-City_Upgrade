@@ -13,12 +13,8 @@ MESSAGE="The TeamCity version: $VERSION_CURRENT has been successfully upgraded t
 exec >> $LOG_FILE 2>&1
 
 # Check if new version is available:
-if [[ ! $IS_NEW_VERSION ]] 
+if [[ $IS_NEW_VERSION ]] 
     then
-	# If not available, report current version to log file:
-        echo -e "\e[91m$(date +%d-%m-%Y_%H:%M:%S)\e[0m \e[93mCurrent TeamCity version is: $VERSION_CURRENT. No update available.\e[0m"
-	exit 0
-    else
 	# If there is, start pulling new version in background:
 	docker pull jetbrains/teamcity-server:latest && \ 
 	echo -e "\e[31m$(date '+%d-%m-%Y %H-%M-%S')\e[0m"
