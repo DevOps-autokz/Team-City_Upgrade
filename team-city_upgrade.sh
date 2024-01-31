@@ -1,13 +1,13 @@
 #!/bin/sh
-SCRIPT_HOME="$HOME/scripts/team-city_upgrade"
+SCRIPT_HOME="$HOME/scripts"
 TEAMCITY_HOME="$HOME/team-city"
 [ -f ${SCRIPT_HOME}/.env ] && . ${SCRIPT_HOME}/.env
 TEAMCITY_URL="http://localhost:8111"
 LOG_FILE="${SCRIPT_HOME}/team-city_upgrade.log"
 #token_teamcity="insert your TeamCity token here, or to .env file"
-VERSION_CURRENT=$(curl -H "Authorization: Bearer $token_teamcity" -H "Content-Type: application/xml"  -X GET "$TEAMCITY_URL/admin/admin.html?item=update" 2>/dev/null | grep -Eio  ".{0,10}\(build.{0,8}" | tail -n 1 )
+VERSION_CURRENT=$(curl -H "Authorization: Bearer $token_teamcity" -H "Content-Type: application/xml"  -X GET "$TEAMCITY_URL/admin/admin.html?item=update" 2>/dev/null | grep -Eio -m 1  ".{0,10}\(build.{0,8}")
 IS_NEW_VERSION=$(curl -H "Authorization: Bearer $token_teamcity" -H "Content-Type: application/xml"  -X GET  "$TEAMCITY_URL/admin/admin.html?item=update" 2>/dev/null | grep -Eio  "updateOptionsContainer")
-VERSION_NEW=$(curl -H "Authorization: Bearer $token_teamcity" -H "Content-Type: application/xml"  -X GET "$TEAMCITY_URL/admin/admin.html?item=update" 2>/dev/null | grep -Eio -m 1 ".{0,10}\(build.{0,8}") 
+VERSION_NEW=$(curl -H "Authorization: Bearer $token_teamcity" -H "Content-Type: application/xml"  -X GET "$TEAMCITY_URL/admin/admin.html?item=update" 2>/dev/null | grep -Eio -m 2 ".{0,10}\(build.{0,8}" | tail -n 1) 
 IMAGE_ID_CURRENT=$(docker images -q "jetbrains/teamcity-server")
 #TG_TOKEN_ADMIN="insert your Telegram Admin Chat-ID here, or to .env file"
 #TG_TOKEN_GROUP="insert your Telegram Group Chat-ID here, or to .env file"
@@ -23,14 +23,15 @@ if [[ $IS_NEW_VERSION ]]
 	echo -e "\e[32mNew TeamCity version is: $VERSION_NEW\e[0m"
 	/usr/bin/telegram-send "TeamCity upgrade started..." >/dev/null
 	# start pulling new version in background:
-	docker pull jetbrains/teamcity-server:latest && \
+	docker pull -q jetbrains/teamcity-server:latest && \
 
 	# Restart docker-compose with new TC-image (lastest):
 	cd "${TEAMCITY_HOME}" && \
 	docker compose stop TeamCity-Server && \
 	docker compose rm -f TeamCity-Server && \
 	docker rmi $IMAGE_ID_CURRENT && \
-	docker compose up -d
+	docker compose up -d && \
+	sleep 5
 
         # Get authentication token from Log file to unlcok Team-City after upgrade: 
 	tc_unlock_token=$(grep -Eo '\d{19}' ${TEAMCITY_HOME}/server/logs/teamcity-server.log | tail -n 1) 
